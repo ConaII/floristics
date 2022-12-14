@@ -48,7 +48,7 @@ public class BeeGrower extends PlantGrower {
             placeMaterial = placeBlock.getType();
         }
         
-        if (this.surface.isValid(supportMaterial) && placeMaterial == Material.AIR && Floristics.hasPermission(placeBlock.getLocation())) {
+        if (this.surface.isValid(supportMaterial) && placeMaterial == Material.AIR && Floristics.growAllowed(placeBlock.getLocation())) {
             placeBlock.setType(Material.BEE_NEST);
             Beehive nestData = ((Beehive) placeBlock.getBlockData());
             nestData.setFacing(direction);

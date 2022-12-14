@@ -3,7 +3,7 @@ package land.jay.floristics.plants;
 
 import java.util.Random;
 import java.util.Set;
-import org.bukkit.Chunk;
+
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
@@ -87,7 +87,7 @@ public class BushGrower extends PlantGrower {
         
         if (this.isDouble) {
             Block topBlock = spaceBlock.getRelative(BlockFace.UP);
-            if (Floristics.hasPermission(spaceBlock.getLocation()) && Floristics.hasPermission(topBlock.getLocation())) {
+            if (Floristics.growAllowed(spaceBlock.getLocation()) && Floristics.growAllowed(topBlock.getLocation())) {
                 spaceBlock.setType(this.material, false);
                 topBlock.setType(this.material, false);
                 Bisected spaceData = (Bisected) spaceBlock.getBlockData();
@@ -98,7 +98,7 @@ public class BushGrower extends PlantGrower {
                 topBlock.setBlockData(topData);
             }
         } else {
-            if (Floristics.hasPermission(spaceBlock.getLocation())) {
+            if (Floristics.growAllowed(spaceBlock.getLocation())) {
                 spaceBlock.setType(this.material, false);
             }
         }

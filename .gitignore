@@ -1,8 +1,12 @@
-.DS_Store
-bin/
-.idea
-.settings
+/bin/
+/.settings/
+/target/
+/pom/target/
+/.idea/
+*.iml
 .project
 .classpath
+dependency-reduced-pom.xml
+.DS_Store
 *.jar
 *.zip

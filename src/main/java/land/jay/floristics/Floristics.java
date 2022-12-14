@@ -1,12 +1,6 @@
 /** Copyright (C) 2019 Jay Avery */
 package land.jay.floristics;
 
-import java.io.File;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
-import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -18,12 +12,19 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import com.google.common.collect.Sets;
-import land.jay.floristics.compat.TownyWrapper;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Random;
+import java.util.Set;
+import java.util.logging.Level;
+
+import land.jay.floristics.compat.TownyWrapper;
+
 public class Floristics extends JavaPlugin {
-    
+
     public static Floristics instance;
     public static final Random RAND = new Random();
     
@@ -46,18 +47,25 @@ public class Floristics extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        
         instance = this;
-        
+
+        loadConfig();
+
+        if (Bukkit.getPluginManager().getPlugin("Towny") != null) {
+            hasTy = TownyWrapper.onLoad();
+        }
+    }
+
+    private void loadConfig() {
         int version = !this.getConfig().contains("config-version", true) ? 0 : this.getConfig().getInt("config-version");
         if (version != CONFIG_VERSION) {
             warn("Your config file is out of date! A new one will be created, and the old one backed up as config-backup-" + version + ".yml.");
             File configFile = new File(getDataFolder(), "config.yml");
             configFile.renameTo(new File(this.getDataFolder(), "config-backup-" + version + ".yml"));
         }
-        
+
         this.saveDefaultConfig();
-        
+
         delay = this.getConfig().getInt("delay");
         growths = this.getConfig().getInt("growths");
         maxMSPT = this.getConfig().getInt("max-mspt");
@@ -68,18 +76,36 @@ public class Floristics extends JavaPlugin {
                 plants.add(Material.getMaterial(key));
             }
         }
-        
-        hasTy = Bukkit.getPluginManager().getPlugin("Towny") != null;
-        if (hasTy) { hasTy = TownyWrapper.onLoad(); }
     }
-    
+
     @Override
     public void onEnable() {
-        
         Objects.requireNonNull(this.getCommand("floristics")).setExecutor(this);
-        
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this,
                 () -> this.growCycle(), delay, delay);
+    }
+
+    @Override
+    public void onDisable() {
+        instance = null;
+    }
+
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+
+        if (args.length > 0 && args[0].equals("towny")) {
+            if (hasTy) {
+                TownyWrapper.handleCommand(sender, args);
+            } else {
+                sender.sendMessage("§cTowny is missing or support was disabled!");
+            }
+        } else {
+            sender.sendMessage("""
+            §6Usage:
+                §6/floristics towny [here] <enable|disable> §f- §7Toggle growth in towns.
+            """);
+        }
+        return true;
     }
 
     /** Attempts growth in each enabled world. */
@@ -112,19 +138,19 @@ public class Floristics extends JavaPlugin {
         }
 
         /*
-         for (World world : Bukkit.getWorlds()) {
-             if (worlds.contains(world.getName())) {
-                 Chunk[] chunks = world.getLoadedChunks();
-                 if (chunks.length > 0) {
-                     for (int i = 0; i < Bukkit.getServer().getOnlinePlayers().size(); i++) {
-                         Chunk chunk = chunks[RAND.nextInt(chunks.length)];
-                         int x = (chunk.getX() * 16) + RAND.nextInt(16);
-                         int z = (chunk.getZ() * 16) + RAND.nextInt(16);
-                         BiomeGrower.handleGrowth(world, x, z);
-                     }
-                 }
-             }
-         }
+        for (World world : Bukkit.getWorlds()) {
+            if (worlds.contains(world.getName())) {
+                Chunk[] chunks = world.getLoadedChunks();
+                if (chunks.length > 0) {
+                    for (int i = 0; i < Bukkit.getServer().getOnlinePlayers().size(); i++) {
+                        Chunk chunk = chunks[RAND.nextInt(chunks.length)];
+                        int x = (chunk.getX() * 16) + RAND.nextInt(16);
+                        int z = (chunk.getZ() * 16) + RAND.nextInt(16);
+                        BiomeGrower.handleGrowth(world, x, z);
+                    }
+                }
+            }
+        }
         */
     }
     
@@ -134,27 +160,10 @@ public class Floristics extends JavaPlugin {
     }
     
     /** @return Whether growth is allowed at this location. */
-    public static boolean hasPermission(Location location) {
+    public static boolean growAllowed(Location location) {
         return TownyWrapper.canGrow(location);
     }
-    
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
 
-        if (args.length > 0 && args[0].equals("towny")) {
-            if (hasTy) {
-                TownyWrapper.handleCommand(sender, args);
-            } else {
-                sender.sendMessage("Towny is missing or support was disabled!");
-                sender.sendMessage("This command is only for use with Towny.");
-            }
-        } else {
-            sender.sendMessage("Plugin Commands:");
-            sender.sendMessage("  Use /floristics towny [enable|disable] for Towny permissions");
-        }
-        return true;
-    }
-    
     public static void info(String message) {
         instance.getLogger().log(Level.INFO, message);
     }

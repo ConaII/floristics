@@ -3,7 +3,6 @@ package land.jay.floristics.plants;
 
 import java.util.Set;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.TreeType;
 import org.bukkit.World;
@@ -59,7 +58,7 @@ public class TreeGrower extends PlantGrower {
         }
         
         if (!this.surface.isValid(surfaceBlock.getType()) ||
-                !Floristics.hasPermission(placeBlock.getLocation())) {
+                !Floristics.growAllowed(placeBlock.getLocation())) {
             return;
         }
 
