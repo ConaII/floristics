@@ -16,6 +16,8 @@ import com.palmergames.bukkit.towny.object.metadata.BooleanDataField;
 import com.palmergames.bukkit.towny.object.metadata.CustomDataField;
 import land.jay.floristics.Floristics;
 
+import java.util.Objects;
+
 public class TownyWrapper {
 
     /** Custom field for growth permission. */
@@ -31,7 +33,7 @@ public class TownyWrapper {
         } catch (KeyAlreadyRegisteredException ex) {
             Floristics.error("Someone has already registered a floristics field for Towny, this should never happen!\n" +
                     "Towny compatibility will be DISABLED.", ex);
-            return true;
+            return false;
         }
     }
     
@@ -62,18 +64,17 @@ public class TownyWrapper {
         boolean validInfo = args.length == 1;
         boolean validChange = args.length == 2 && (args[1].equals("enable") || args[1].equals("disable"));
         
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             sender.sendMessage("You must be a player to use this command.");
             return;
         }
-        
-        Player player = (Player) sender;
-        
+
         if (!validInfo && !validChange) {
-            player.sendMessage("Unknown command or invalid arguments. Valid uses:\n" +
-                    "/floristics towny - display whether growth is enabled in this Town\n" +
-                    "/floristics towny <enable|disable> - enable or disable growth in this Town\n" +
-                    "Or replace /floristics with /flo for convenience.");
+            player.sendMessage("""
+                    Unknown command or invalid arguments. Valid uses:
+                    /floristics towny - display whether growth is enabled in this Town
+                    /floristics towny <enable|disable> - enable or disable growth in this Town
+                    Or replace /floristics with /flo for convenience.""");
             return;
         }
         
@@ -87,19 +88,22 @@ public class TownyWrapper {
         if (!resident.isMayor() || town == null) {
             player.sendMessage(Component.text("You are not a town mayor.", NamedTextColor.RED));
         }
-        
-        if (!town.getMetadata().contains(FIELD)) {
+
+        if (!Objects.requireNonNull(town).getMetadata().contains(FIELD)) {
             town.addMetaData(FIELD);
         }
 
         BooleanDataField field = null;
-        for (CustomDataField metadata : town.getMetadata()) {
+        for (CustomDataField<?> metadata : town.getMetadata()) {
             if (metadata.equals(FIELD)) {
                 field = (BooleanDataField) metadata;
             }
         }
-        
-        if (validChange) {
+
+        if (field == null) {
+            player.sendMessage("You're not inside a Town.");
+
+        } else if (validChange) {
             if (args[1].equals("enable")) {
                 field.setValue(true);
                 player.sendMessage("Growth enabled in this Town.");

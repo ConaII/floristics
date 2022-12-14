@@ -3,6 +3,7 @@ package land.jay.floristics;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
@@ -19,6 +20,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.google.common.collect.Sets;
 import land.jay.floristics.compat.TownyWrapper;
+import org.jetbrains.annotations.NotNull;
 
 public class Floristics extends JavaPlugin {
     
@@ -61,7 +63,7 @@ public class Floristics extends JavaPlugin {
         maxMSPT = this.getConfig().getInt("max-mspt");
         worlds.addAll(this.getConfig().getStringList("worlds"));
         ConfigurationSection section = this.getConfig().getConfigurationSection("plants");
-        for (String key : section.getKeys(false)) {
+        for (String key : Objects.requireNonNull(section).getKeys(false)) {
             if (section.getBoolean(key)) {
                 plants.add(Material.getMaterial(key));
             }
@@ -74,13 +76,16 @@ public class Floristics extends JavaPlugin {
     @Override
     public void onEnable() {
         
-        this.getCommand("floristics").setExecutor(this);
+        Objects.requireNonNull(this.getCommand("floristics")).setExecutor(this);
         
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this,
                 () -> this.growCycle(), delay, delay);
     }
 
     /** Attempts growth in each enabled world. */
+    // TODO Remove commented code
+    //      Add growth tick limiter
+    //      Add 1.17 & 1.18 support with BIOME_TAGS at the same time
     private void growCycle() {
         // Skip if average MSPT is greater than growth MSPT limit
         if (Bukkit.getServer().getAverageTickTime() > maxMSPT) {
@@ -107,20 +112,20 @@ public class Floristics extends JavaPlugin {
         }
 
         /*
-        for (World world : Bukkit.getWorlds()) {
-            if (worlds.contains(world.getName())) {
-                Chunk[] chunks = world.getLoadedChunks();
-                if (chunks.length > 0) {
-                    for (int i = 0; i < Bukkit.getServer().getOnlinePlayers().size(); i++) {
-                        Chunk chunk = chunks[RAND.nextInt(chunks.length)];
-                        int x = (chunk.getX() * 16) + RAND.nextInt(16);
-                        int z = (chunk.getZ() * 16) + RAND.nextInt(16);
-                        BiomeGrower.handleGrowth(world, x, z);
-                    }
-                }
-            }
-        }
-         */
+         for (World world : Bukkit.getWorlds()) {
+             if (worlds.contains(world.getName())) {
+                 Chunk[] chunks = world.getLoadedChunks();
+                 if (chunks.length > 0) {
+                     for (int i = 0; i < Bukkit.getServer().getOnlinePlayers().size(); i++) {
+                         Chunk chunk = chunks[RAND.nextInt(chunks.length)];
+                         int x = (chunk.getX() * 16) + RAND.nextInt(16);
+                         int z = (chunk.getZ() * 16) + RAND.nextInt(16);
+                         BiomeGrower.handleGrowth(world, x, z);
+                     }
+                 }
+             }
+         }
+        */
     }
     
     /** @return Whether growth of this plant is enabled. */
@@ -134,21 +139,19 @@ public class Floristics extends JavaPlugin {
     }
     
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        
-        if (!hasTy) {
-            sender.sendMessage("This command is only for use with GriefPrevention or Towny.");
-            return true;
-        }
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
 
-       if (args.length > 0 && args[0].equals("towny")) {
+        if (args.length > 0 && args[0].equals("towny")) {
             if (hasTy) {
                 TownyWrapper.handleCommand(sender, args);
             } else {
-                sender.sendMessage("Use /floristics towny [enable|disable] for Towny permissions.");
+                sender.sendMessage("Towny is missing or support was disabled!");
+                sender.sendMessage("This command is only for use with Towny.");
             }
+        } else {
+            sender.sendMessage("Plugin Commands:");
+            sender.sendMessage("  Use /floristics towny [enable|disable] for Towny permissions");
         }
-        
         return true;
     }
     
