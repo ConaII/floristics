@@ -1,20 +1,15 @@
 /** Copyright (C) 2019 Jay Avery */
 package land.jay.floristics;
 
-import java.util.List;
+import com.cryptomorin.xseries.XBiome;
+import com.google.common.collect.Lists;
+import land.jay.floristics.plants.*;
+import land.jay.floristics.plants.PlantGrower.SurfaceType;
 import org.bukkit.Material;
 import org.bukkit.TreeType;
 import org.bukkit.World;
-import org.bukkit.block.Biome;
-import com.google.common.collect.Lists;
-import land.jay.floristics.plants.BeeGrower;
-import land.jay.floristics.plants.BushGrower;
-import land.jay.floristics.plants.CactusGrower;
-import land.jay.floristics.plants.MushroomGrower;
-import land.jay.floristics.plants.PlantGrower;
-import land.jay.floristics.plants.SugarcaneGrower;
-import land.jay.floristics.plants.TreeGrower;
-import land.jay.floristics.plants.PlantGrower.SurfaceType;
+
+import java.util.List;
 
 /** Handler for growth depending on biome. */
 public enum BiomeGrower {
@@ -368,73 +363,75 @@ public enum BiomeGrower {
 
     /** Handles growth at the given location. */
     public static void handleGrowth(World world, int x, int z) {
-        get(world.getBiome(x, world.getHighestBlockYAt(x, z), z)).growSomething(world, x, z);
+        get(XBiome.matchXBiome(world.getBiome(x, world.getHighestBlockYAt(x, z), z))).growSomething(world, x, z);
     }
 
     /** @return The appropriate BiomeGrower for the given Biome. */
-    private static BiomeGrower get(Biome biome) {
-
+    private static BiomeGrower get(XBiome biome) {
         switch (biome) {
-
-            case PLAINS:
+            case PLAINS, MEADOW:
                 return PLAINS;
             case SUNFLOWER_PLAINS:
                 return SUNFLOWER_PLAINS;
-            case OCEAN: case DEEP_OCEAN: case COLD_OCEAN: case DEEP_COLD_OCEAN: case LUKEWARM_OCEAN: case DEEP_LUKEWARM_OCEAN:
+            case RIVER:
+                return RIVER;
+            case BEACH:
+                return BEACH;
+            case OCEAN, DEEP_OCEAN, COLD_OCEAN, DEEP_COLD_OCEAN, LUKEWARM_OCEAN, DEEP_LUKEWARM_OCEAN:
                 return COOL_OCEAN;
-            case WARM_OCEAN: case DEEP_WARM_OCEAN:
+            case WARM_OCEAN, DEEP_WARM_OCEAN:
                 return WARM_OCEAN;
-            case DESERT: case DESERT_HILLS: case DESERT_LAKES:
+            case DESERT, DESERT_HILLS, DESERT_LAKES:
                 return DESERT;
-            case MOUNTAINS: case MOUNTAIN_EDGE: case GRAVELLY_MOUNTAINS: case MODIFIED_GRAVELLY_MOUNTAINS:
+            case WINDSWEPT_HILLS, MOUNTAIN_EDGE, MODIFIED_GRAVELLY_MOUNTAINS, STONY_PEAKS:
                 return MOUNTAINS;
             case WOODED_MOUNTAINS:
                 return WOODED_MOUNTAINS;
-            case FOREST: case WOODED_HILLS:
-                return FOREST;
-            case TAIGA: case TAIGA_HILLS: case TAIGA_MOUNTAINS:
-                return TAIGA;
-            case SNOWY_TAIGA: case SNOWY_TAIGA_HILLS: case SNOWY_TAIGA_MOUNTAINS:
-                return SNOWY_TAIGA;
-            case GIANT_TREE_TAIGA: case GIANT_TREE_TAIGA_HILLS: case GIANT_SPRUCE_TAIGA: case GIANT_SPRUCE_TAIGA_HILLS:
-                return MEGA_TAIGA;
-            case SWAMP: case SWAMP_HILLS:
+            case SWAMP, SWAMP_HILLS:
                 return SWAMP;
-            case SNOWY_TUNDRA: case SNOWY_MOUNTAINS:
+            case TAIGA, TAIGA_HILLS, TAIGA_MOUNTAINS:
+                return TAIGA;
+            case OLD_GROWTH_PINE_TAIGA, OLD_GROWTH_SPRUCE_TAIGA, GIANT_TREE_TAIGA, GIANT_TREE_TAIGA_HILLS, GIANT_SPRUCE_TAIGA, GIANT_SPRUCE_TAIGA_HILLS:
+                return MEGA_TAIGA;
+            case SNOWY_TAIGA, SNOWY_TAIGA_HILLS, SNOWY_TAIGA_MOUNTAINS, GROVE:
+                return SNOWY_TAIGA;
+            case SNOWY_MOUNTAINS, SNOWY_PLAINS, SNOWY_SLOPES, JAGGED_PEAKS, FROZEN_PEAKS:
                 return TUNDRA;
-            case MUSHROOM_FIELDS: case MUSHROOM_FIELD_SHORE:
-                return MUSHROOM;
-            case JUNGLE: case JUNGLE_HILLS: case MODIFIED_JUNGLE:
-                return JUNGLE;
-            case JUNGLE_EDGE: case MODIFIED_JUNGLE_EDGE:
-                return JUNGLE_EDGE;
-            case BAMBOO_JUNGLE: case BAMBOO_JUNGLE_HILLS:
-                return BAMBOO_JUNGLE;
-            case SAVANNA: case SAVANNA_PLATEAU: case SHATTERED_SAVANNA: case SHATTERED_SAVANNA_PLATEAU:
-                return SAVANNA;
-            case BADLANDS: case BADLANDS_PLATEAU: case MODIFIED_BADLANDS_PLATEAU: case ERODED_BADLANDS:
-                return BADLANDS;
-            case WOODED_BADLANDS_PLATEAU: case MODIFIED_WOODED_BADLANDS_PLATEAU:
-                return WOODED_BADLANDS;
-            case DARK_FOREST: case DARK_FOREST_HILLS:
-                return DARK_FOREST;
+            case FOREST, WOODED_HILLS:
+                return FOREST;
             case FLOWER_FOREST:
                 return FLOWER_FOREST;
-            case BIRCH_FOREST: case BIRCH_FOREST_HILLS:
+            case BIRCH_FOREST, BIRCH_FOREST_HILLS:
                 return BIRCH_FOREST;
-            case TALL_BIRCH_FOREST: case TALL_BIRCH_HILLS:
+            case TALL_BIRCH_FOREST, TALL_BIRCH_HILLS, OLD_GROWTH_BIRCH_FOREST:
                 return TALL_BIRCH;
-            case RIVER:
-                return RIVER;
+            case JUNGLE, JUNGLE_HILLS, MODIFIED_JUNGLE:
+                return JUNGLE;
+            case SPARSE_JUNGLE, MODIFIED_JUNGLE_EDGE:
+                return JUNGLE_EDGE;
+            case BAMBOO_JUNGLE, BAMBOO_JUNGLE_HILLS:
+                return BAMBOO_JUNGLE;
+            case SAVANNA, SAVANNA_PLATEAU, WINDSWEPT_SAVANNA, SHATTERED_SAVANNA_PLATEAU:
+                return SAVANNA;
+            case DARK_FOREST, DARK_FOREST_HILLS:
+                return DARK_FOREST;
+            case MUSHROOM_FIELDS, MUSHROOM_FIELD_SHORE:
+                return MUSHROOM;
+            case BADLANDS, ERODED_BADLANDS, BADLANDS_PLATEAU, MODIFIED_BADLANDS_PLATEAU:
+                return BADLANDS;
+            case WOODED_BADLANDS, WOODED_BADLANDS_PLATEAU, MODIFIED_WOODED_BADLANDS_PLATEAU:
+                return WOODED_BADLANDS;
             case END_HIGHLANDS:
                 return END;
-            case BEACH:
-                return BEACH;
-            case BASALT_DELTAS: case NETHER_WASTES: case WARPED_FOREST: case CRIMSON_FOREST: case SOUL_SAND_VALLEY:
+            case BASALT_DELTAS, NETHER_WASTES, WARPED_FOREST, CRIMSON_FOREST, SOUL_SAND_VALLEY:
                 return NETHER;
-            case FROZEN_OCEAN: case DEEP_FROZEN_OCEAN: case THE_END: case FROZEN_RIVER: case STONE_SHORE: case SNOWY_BEACH: case SMALL_END_ISLANDS: case END_MIDLANDS: case END_BARRENS: case THE_VOID: case ICE_SPIKES:
+            case FROZEN_OCEAN, DEEP_FROZEN_OCEAN, THE_END, FROZEN_RIVER, STONY_SHORE, SNOWY_BEACH, SMALL_END_ISLANDS, END_MIDLANDS, END_BARRENS, THE_VOID, ICE_SPIKES:
             default:
                 return BARREN;
         }
     }
+
+
+
+
 }

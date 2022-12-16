@@ -82,7 +82,7 @@ public class Floristics extends JavaPlugin {
     public void onEnable() {
         Objects.requireNonNull(this.getCommand("floristics")).setExecutor(this);
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this,
-                () -> this.growCycle(), delay, delay);
+                this::growCycle, delay, delay);
     }
 
     @Override
